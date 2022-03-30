@@ -3,6 +3,8 @@ import { Signer, Contract, ContractFactory } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 //todo arefev: implement
+//todo arefev: baseURI == "https://ipfs.io/ipfs/"
+//todo arefev: contractURI ==  "https://ipfs.io/ipfs/QmVW8oSySifTBDBvkTGC7J5r9UDCJ4Ndiig6B3EHvURt5S"
 async function main() {
   /*const stakingToken: string = '0xacfe81d7c4504dea81043f33269c986fac7d00e5';
   const rewardToken: string = '0xEB493B155cADDf961268A7417F6bcf90eCcE1645';

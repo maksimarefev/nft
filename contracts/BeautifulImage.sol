@@ -4,31 +4,34 @@ pragma solidity >=0.8.0 <=0.8.1;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol"; //todo arefev: use it
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol"; //todo arefev: use it
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
-//todo arefev: should i include another metadata?
+/**
+ * @notice Represents a single collection
+ */
 contract BeautifulImage is ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Ownable {
     using Counters for Counters.Counter;
 
-    //todo arefev: make configurable?
-    string private baseURI = "https://ipfs.io/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn/";
     Counters.Counter private tokenIdGenerator;
 
-    /* solhint-disable no-empty-blocks */
-    constructor() public ERC721("Cats", "CTS") {
+    string private _contractURI;
+    string private baseURI_;
+
+    constructor(string memory contractURI, string memory baseURI) public ERC721("Cats", "CTS") {
+        _contractURI = contractURI;
+        baseURI_ = baseURI;
     }
-    /* solhint-enable no-empty-blocks */
 
      /**
-      * @notice Mints a new token with the `itemURI` to the `to` address
+      * @notice Mints a new token with the `tokenCID` to the `to` address
       * @param to is the recepient address
-      * @param itemURI is the token URI
+      * @param tokenCID is the content identifier of a token's metadata
       */
-    function mint(address to, string memory itemURI) public onlyOwner {
+    function mint(address to, string memory tokenCID) public onlyOwner {
         _safeMint(to, tokenIdGenerator.current());
-        _setTokenURI(tokenIdGenerator.current(), itemURI);
+        _setTokenURI(tokenIdGenerator.current(), tokenCID);
         tokenIdGenerator.increment();
     }
 
@@ -55,18 +58,18 @@ contract BeautifulImage is ERC721Enumerable, ERC721URIStorage, ERC721Burnable, O
      * @return base URI
      */
     function getBaseURI() public view returns (string memory) {
-        return baseURI;
+        return _baseURI();
     }
 
     /**
      * @dev Link to Contract metadata https://docs.opensea.io/docs/contract-level-metadata
      */
-    function contractURI() public pure returns (string memory) {
-        return "https://arweave.net/WG3HOwfkrRJnT-GYln3Q5Q3kAUYhqH-0hJMEv5838AM"; //todo arefev: upload to ipfs
+    function contractURI() public view returns (string memory) {
+        return _contractURI;
     }
 
     function _baseURI() internal override view virtual returns (string memory) {
-        return "https://ipfs.io/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn/";
+        return baseURI_;
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override(ERC721, ERC721Enumerable) {

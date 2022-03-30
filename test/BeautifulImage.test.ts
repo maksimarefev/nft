@@ -3,42 +3,51 @@ import { ethers, artifacts, network } from "hardhat";
 import { Signer, Contract, ContractFactory, Event, BigNumber } from "ethers";
 import { BeautifulImage, BeautifulImage__factory } from '../typechain-types';
 
-/*
-todo arefev: write tests
-  * should return valid total supply
-  * should return valid token owner
-  * should return valid token by index
-  * should return valid balance
-*/
-  describe("BeautifulImage", function () {
+describe("BeautifulImage", function () {
 
-    let bob: Signer;
-    let alice: Signer;
-    let contract: BeautifulImage;
+  const baseURI: string = "https://ipfs.io/ipfs/";
+  const contractURI: string = "https://ipfs.io/ipfs/QmVW8oSySifTBDBvkTGC7J5r9UDCJ4Ndiig6B3EHvURt5S";
 
-    function assertTransferEvent(event: Event, from: string, to: string, value: number) {
-        expect("Transfer").to.equal(event.event);
-        expect(from).to.equal(event.args.from);
-        expect(to).to.equal(event.args.to);
-        expect(value).to.equal(event.args.tokenId.toNumber());
+  let bob: Signer;
+  let alice: Signer;
+  let contract: BeautifulImage;
+
+  function assertTransferEvent(event: Event, from: string, to: string, value: number) {
+      expect("Transfer").to.equal(event.event);
+      expect(from).to.equal(event.args.from);
+      expect(to).to.equal(event.args.to);
+      expect(value).to.equal(event.args.tokenId.toNumber());
+  }
+
+  function assertApprovalEvent(event: Event, tokenOwner: string, spender: string, value: number) {
+      expect("Approval").to.equal(event.event);
+      expect(tokenOwner).to.equal(event.args.owner);
+      expect(spender).to.equal(event.args.approved);
+      expect(value).to.equal(event.args.tokenId.toNumber());
+  }
+
+  function extractSelector(...signatures: string[]): string {
+    let selector = 0;
+
+    for (let signature of signatures) {
+      const hexAsString = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(signature)).slice(0, 10);
+      const hexAsInt = parseInt(hexAsString);
+      selector = selector ^ hexAsInt;
     }
 
-    function assertApprovalEvent(event: Event, tokenOwner: string, spender: string, value: number) {
-        expect("Approval").to.equal(event.event);
-        expect(tokenOwner).to.equal(event.args.owner);
-        expect(spender).to.equal(event.args.approved);
-        expect(value).to.equal(event.args.tokenId.toNumber());
-    }
+    return ethers.utils.hexlify(selector>>>0);
+  }
 
-    beforeEach(async function () {
-      [alice, bob] = await ethers.getSigners();
+  beforeEach(async function () {
+    [alice, bob] = await ethers.getSigners();
 
-      const BeautifulImageFactory: BeautifulImage__factory = 
-        (await ethers.getContractFactory("BeautifulImage")) as BeautifulImage__factory;
+    const BeautifulImageFactory: BeautifulImage__factory = 
+      (await ethers.getContractFactory("BeautifulImage")) as BeautifulImage__factory;
 
-      contract = await BeautifulImageFactory.deploy();
-    });
+    contract = await BeautifulImageFactory.deploy(contractURI, baseURI);
+  });
 
+  describe("metadata", async function() {
     it("Should return the valid symbol", async function () {
         const expectedSymbol: string = "CTS";
 
@@ -71,6 +80,14 @@ todo arefev: write tests
       expect(baseURI + itemURI).to.equal(tokenURI);
     });
 
+    it("Should return the valid contract URI", async function () {
+      const actualContractURI = await contract.contractURI();
+
+      expect(contractURI).to.be.equal(actualContractURI);
+    });
+  });
+
+  describe("minting", async function() {
     it("Should allow for owner to mint tokens", async function () {
       const expectedTokenId: number = 0;
       const tokenURI: string = "random";
@@ -101,9 +118,10 @@ todo arefev: write tests
       const mintTxPromise: Promise<any> = contract.connect(bob).mint(aliceAddress, tokenURI);
 
       await expect(mintTxPromise).to.be.revertedWith("'Ownable: caller is not the owner'");
-
     });
+  });
 
+  describe("burning", async function() {
     it("Should not allow to burn non-belonging tokens", async function () {
       const aliceAddress: string = await alice.getAddress();
       const bobAddress: string = await bob.getAddress();
@@ -119,7 +137,7 @@ todo arefev: write tests
       const burnTxPromise: Promise<any> = contract.connect(bob).burn(expectedTokenId);
 
       await expect(burnTxPromise)
-        .to.be.revertedWith("Error: VM Exception while processing transaction: reverted with reason string 'ERC721Burnable: caller is not owner nor approved'");
+        .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'ERC721Burnable: caller is not owner nor approved'");
     });
 
     it("Should allow to burn belonging tokens", async function () {
@@ -156,12 +174,82 @@ todo arefev: write tests
       const totalSupplyAfterBurning: BigNumber = await contract.totalSupply();
       expect(0).to.equal(totalSupplyAfterBurning.toNumber());
     });
+  });
+
+  describe("transfer", async function() {
+    it("Should allow to transfer belonging token", async function () {
+      //todo arefev: implement
+    });
 
     it("Should allow to transfer approved token", async function () {
       //todo arefev: implement
     });
 
-    it("should not allow to transfer unapproved token", async function () {
+    it("Should not allow to transfer unapproved token", async function () {
       //todo arefev: implement
     });
   });
+
+  describe("misc", async function() {
+    it('Should correctly check supported interfaces', async function() {
+      const ierc165Selector = extractSelector("supportsInterface(bytes4)");
+      const ierc721MetadataSelector = extractSelector("name()", "symbol()", "tokenURI(uint256)");
+      const ierc721Selector = extractSelector(
+        "balanceOf(address)",
+        "ownerOf(uint256)",
+        "safeTransferFrom(address,address,uint256)",
+        "transferFrom(address,address,uint256)",
+        "approve(address,uint256)",
+        "getApproved(uint256)",
+        "setApprovalForAll(address,bool)",
+        "isApprovedForAll(address,address)",
+        "safeTransferFrom(address,address,uint256,bytes)"
+      );
+      const ierc721EnumerableSelector = extractSelector(
+        "totalSupply()", "tokenOfOwnerByIndex(address,uint256)", "tokenByIndex(uint256)"
+      );
+
+      const supportsIERC165 = await contract.supportsInterface(ierc165Selector);
+      const supportsIERC721Metadata = await contract.supportsInterface(ierc721MetadataSelector);
+      const supportsIERC721Enumerable = await contract.supportsInterface(ierc721EnumerableSelector);
+      const supportsIERC721 = await contract.supportsInterface(ierc721Selector);
+
+      expect(supportsIERC165).to.equal(true);
+      expect(supportsIERC721Metadata).to.equal(true);
+      expect(supportsIERC721Enumerable).to.equal(true);
+      expect(supportsIERC721).to.equal(true);
+    });
+
+    it('Should return valid token owner', async function() {
+      const expectedTokenId: number = 0;
+      const itemURI: string = "random";
+      const aliceAddress: string = await alice.getAddress();
+
+      const mintTx: any = await contract.mint(aliceAddress, itemURI);
+
+      const tokenOwner = await contract.ownerOf(expectedTokenId);
+
+      expect(aliceAddress).to.equal(tokenOwner);
+    });
+
+    it('Should not allow to find owner for a non-existent token', async function() {
+      const nonExistentTokenId = 1;
+
+      const ownerOfPromise: any = contract.ownerOf(1);
+
+      await expect(ownerOfPromise).to.be.revertedWith("ERC721: owner query for nonexistent token");
+    });
+
+    it('Should return valid token by index', async function() {
+      //todo arefev: implement
+    });
+
+    it('Should return valid total supply', async function() {
+      //todo arefev: implement
+    });
+
+    it('Should return a valid balance of account', async function() {
+      //todo arefev: implement
+    });
+  });
+});
