@@ -10,7 +10,7 @@ describe("BeautifulImage", function () {
 
   let bob: Signer;
   let alice: Signer;
-  let contract: BeautifulImage;
+  let beautifulImage: BeautifulImage;
 
   function assertTransferEvent(event: Event, from: string, to: string, value: number) {
       expect("Transfer").to.equal(event.event);
@@ -38,20 +38,20 @@ describe("BeautifulImage", function () {
     return ethers.utils.hexlify(selector>>>0);
   }
 
-  beforeEach(async function () {
+  beforeEach("Deploying contract", async function () {
     [alice, bob] = await ethers.getSigners();
 
     const BeautifulImageFactory: BeautifulImage__factory = 
       (await ethers.getContractFactory("BeautifulImage")) as BeautifulImage__factory;
 
-    contract = await BeautifulImageFactory.deploy(contractURI, baseURI);
+    beautifulImage = await BeautifulImageFactory.deploy(contractURI, baseURI);
   });
 
   describe("metadata", async function() {
     it("Should return the valid symbol", async function () {
         const expectedSymbol: string = "CTS";
 
-        const actualSymbol: string = await contract.symbol();
+        const actualSymbol: string = await beautifulImage.symbol();
         
         expect(expectedSymbol).to.equal(actualSymbol);
     });
@@ -59,7 +59,7 @@ describe("BeautifulImage", function () {
     it("Should return the valid name", async function () {
         const expectedName: string = "Cats";
 
-        const actualName: string = await contract.name();
+        const actualName: string = await beautifulImage.name();
         
         expect(expectedName).to.equal(actualName);
     });
@@ -68,22 +68,28 @@ describe("BeautifulImage", function () {
       const expectedTokenId: number = 0;
       const itemURI: string = "random";
       const aliceAddress: string = await alice.getAddress();
-      const baseURI: string = await contract.getBaseURI();
+      const baseURI: string = await beautifulImage.getBaseURI();
 
-      const mintTx: any = await contract.mint(aliceAddress, itemURI);
+      const mintTx: any = await beautifulImage.mint(aliceAddress, itemURI);
       const mintTxReceipt: any = await mintTx.wait();
 
       expect(1, mintTxReceipt.events.length)
       assertTransferEvent(mintTxReceipt.events[0], ethers.constants.AddressZero, aliceAddress, expectedTokenId);
 
-      const tokenURI: string = await contract.tokenURI(expectedTokenId);
+      const tokenURI: string = await beautifulImage.tokenURI(expectedTokenId);
       expect(baseURI + itemURI).to.equal(tokenURI);
     });
 
     it("Should return the valid contract URI", async function () {
-      const actualContractURI = await contract.contractURI();
+      const actualContractURI = await beautifulImage.contractURI();
 
       expect(contractURI).to.be.equal(actualContractURI);
+    });
+
+    it("Should return the valid base URI", async function () {
+      const actualBaseURI = await beautifulImage.getBaseURI();
+
+      expect(baseURI).to.be.equal(actualBaseURI);
     });
   });
 
@@ -92,49 +98,56 @@ describe("BeautifulImage", function () {
       const expectedTokenId: number = 0;
       const tokenURI: string = "random";
       const aliceAddress: string = await alice.getAddress();
-      const totalSupplyBeforeMinting: BigNumber = await contract.totalSupply();
+      const totalSupplyBeforeMinting: BigNumber = await beautifulImage.totalSupply();
 
       expect(0).to.equal(totalSupplyBeforeMinting.toNumber());
 
-      const mintTx: any = await contract.mint(aliceAddress, tokenURI);
+      const mintTx: any = await beautifulImage.mint(aliceAddress, tokenURI);
       const mintTxReceipt: any = await mintTx.wait();
 
       expect(1, mintTxReceipt.events.length)
       assertTransferEvent(mintTxReceipt.events[0], ethers.constants.AddressZero, aliceAddress, expectedTokenId);
 
-      const aliceBalance: BigNumber = await contract.balanceOf(aliceAddress);
+      const aliceBalance: BigNumber = await beautifulImage.balanceOf(aliceAddress);
       expect(1).to.equal(aliceBalance.toNumber());
 
-      const tokentOwner: string = await contract.ownerOf(expectedTokenId);
+      const tokentOwner: string = await beautifulImage.ownerOf(expectedTokenId);
       expect(aliceAddress).to.equal(tokentOwner);
 
-      const totalSupplyAfterMinting: BigNumber = await contract.totalSupply();
+      const totalSupplyAfterMinting: BigNumber = await beautifulImage.totalSupply();
       expect(1).to.equal(totalSupplyAfterMinting.toNumber());
     });
 
     it("Should not allow for non-owner to mint tokens", async function () {
-      const aliceAddress = await alice.getAddress();
+      const aliceAddress: string = await alice.getAddress();
       const tokenURI: string = "random";
-      const mintTxPromise: Promise<any> = contract.connect(bob).mint(aliceAddress, tokenURI);
+      const mintTxPromise: Promise<any> = beautifulImage.connect(bob).mint(aliceAddress, tokenURI);
 
       await expect(mintTxPromise).to.be.revertedWith("'Ownable: caller is not the owner'");
+    });
+
+    it("Should not allow minting to the zero address", async function () {
+      const aliceAddress: string = await alice.getAddress();
+      const tokenURI: string = "random";
+      const mintTxPromise: Promise<any> = beautifulImage.mint(ethers.constants.AddressZero, tokenURI);
+
+      await expect(mintTxPromise)
+        .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'ERC721: mint to the zero address'");
     });
   });
 
   describe("burning", async function() {
-    it("Should not allow to burn non-belonging tokens", async function () {
-      const aliceAddress: string = await alice.getAddress();
-      const bobAddress: string = await bob.getAddress();
-      const expectedTokenId: number = 0;
+    beforeEach("Minting a token for Alice", async function () {
       const tokenURI: string = "random";
+      const aliceAddress: string = await alice.getAddress();
 
-      const mintTx: any = await contract.mint(aliceAddress, tokenURI);
-      const mintTxReceipt: any = await mintTx.wait();
+      await beautifulImage.mint(aliceAddress, tokenURI);
+    });
 
-      expect(1, mintTxReceipt.events.length)
-      assertTransferEvent(mintTxReceipt.events[0], ethers.constants.AddressZero, aliceAddress, expectedTokenId);
+    it("Should not allow to burn non-belonging tokens", async function () {
+      const expectedTokenId: number = 0;
 
-      const burnTxPromise: Promise<any> = contract.connect(bob).burn(expectedTokenId);
+      const burnTxPromise: Promise<any> = beautifulImage.connect(bob).burn(expectedTokenId);
 
       await expect(burnTxPromise)
         .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'ERC721Burnable: caller is not owner nor approved'");
@@ -142,51 +155,104 @@ describe("BeautifulImage", function () {
 
     it("Should allow to burn belonging tokens", async function () {
       const expectedTokenId: number = 0;
-      const tokenURI: string = "random";
       const aliceAddress: string = await alice.getAddress();
-      const totalSupplyBeforeMinting: BigNumber = await contract.totalSupply();
 
-      //todo arefev: check alice' balance
-      expect(0).to.equal(totalSupplyBeforeMinting.toNumber());
-
-      const mintTx: any = await contract.mint(aliceAddress, tokenURI);
-      const mintTxReceipt: any = await mintTx.wait();
-
-      expect(1, mintTxReceipt.events.length)
-      assertTransferEvent(mintTxReceipt.events[0], ethers.constants.AddressZero, aliceAddress, expectedTokenId);
-
-      const aliceBalanceAfterMinting: BigNumber = await contract.balanceOf(aliceAddress);
-      expect(1).to.equal(aliceBalanceAfterMinting.toNumber());
-
-      const totalSupplyAfterMinting: BigNumber = await contract.totalSupply();
-      expect(1).to.equal(totalSupplyAfterMinting.toNumber());
-
-      const burnTx: any = await contract.burn(expectedTokenId);
+      const burnTx: any = await beautifulImage.burn(expectedTokenId);
       const burnTxReceipt: any = await burnTx.wait();
 
       expect(2, burnTxReceipt.events.length)
       assertApprovalEvent(burnTxReceipt.events[0], aliceAddress, ethers.constants.AddressZero, expectedTokenId);
       assertTransferEvent(burnTxReceipt.events[1], aliceAddress, ethers.constants.AddressZero, expectedTokenId);
 
-      const aliceBalanceAfterBurning: BigNumber = await contract.balanceOf(aliceAddress);
+      const aliceBalanceAfterBurning: BigNumber = await beautifulImage.balanceOf(aliceAddress);
       expect(0).to.equal(aliceBalanceAfterBurning.toNumber());
 
-      const totalSupplyAfterBurning: BigNumber = await contract.totalSupply();
+      const totalSupplyAfterBurning: BigNumber = await beautifulImage.totalSupply();
       expect(0).to.equal(totalSupplyAfterBurning.toNumber());
     });
   });
 
   describe("transfer", async function() {
+    beforeEach("Minting a token for Alice", async function () {
+      const tokenURI: string = "random";
+      const aliceAddress: string = await alice.getAddress();
+
+      await beautifulImage.mint(aliceAddress, tokenURI);
+    });
+
     it("Should allow to transfer belonging token", async function () {
-      //todo arefev: implement
+      const tokenId: number = 0;
+      const aliceAddress: string = await alice.getAddress();
+      const bobAddress: string = await bob.getAddress();
+
+      let balanceOfBob = await beautifulImage.balanceOf(bobAddress);
+      let balanceOfAlice = await beautifulImage.balanceOf(aliceAddress);
+      let tokenOwner = await beautifulImage.ownerOf(tokenId);
+
+      expect(0).to.be.equal(balanceOfBob);
+      expect(1).to.be.equal(balanceOfAlice);
+      expect(aliceAddress).to.be.equal(tokenOwner);
+
+      const transferTx: any = await beautifulImage.transferFrom(aliceAddress, bobAddress, tokenId);
+      const transferTxReceipt: any = await transferTx.wait();
+
+      expect(2, transferTxReceipt.events.length)
+      assertApprovalEvent(transferTxReceipt.events[0], aliceAddress, ethers.constants.AddressZero, tokenId);
+      assertTransferEvent(transferTxReceipt.events[1], aliceAddress, bobAddress, tokenId);
+      
+      balanceOfBob = await beautifulImage.balanceOf(bobAddress);
+      balanceOfAlice = await beautifulImage.balanceOf(aliceAddress);
+      tokenOwner = await beautifulImage.ownerOf(tokenId);
+
+      expect(1).to.be.equal(balanceOfBob);
+      expect(0).to.be.equal(balanceOfAlice);
+      expect(bobAddress).to.be.equal(tokenOwner);
     });
 
     it("Should allow to transfer approved token", async function () {
-      //todo arefev: implement
+      const tokenId: number = 0;
+      const aliceAddress: string = await alice.getAddress();
+      const bobAddress: string = await bob.getAddress();
+
+      let balanceOfBob = await beautifulImage.balanceOf(bobAddress);
+      let balanceOfAlice = await beautifulImage.balanceOf(aliceAddress);
+      let tokenOwner = await beautifulImage.ownerOf(tokenId);
+
+      expect(0).to.be.equal(balanceOfBob);
+      expect(1).to.be.equal(balanceOfAlice);
+      expect(aliceAddress).to.be.equal(tokenOwner);
+
+      const approveTx: any = await beautifulImage.approve(bobAddress, tokenId);
+      const approveTxReceipt: any = await approveTx.wait();
+
+      expect(1, approveTxReceipt.events.length)
+      assertApprovalEvent(approveTxReceipt.events[0], aliceAddress, bobAddress, tokenId);
+
+      const transferTx: any = await beautifulImage.connect(bob).transferFrom(aliceAddress, bobAddress, tokenId);
+      const transferTxReceipt: any = await transferTx.wait();
+
+      expect(2, transferTxReceipt.events.length)
+      assertApprovalEvent(transferTxReceipt.events[0], aliceAddress, ethers.constants.AddressZero, tokenId);
+      assertTransferEvent(transferTxReceipt.events[1], aliceAddress, bobAddress, tokenId);
+      
+      balanceOfBob = await beautifulImage.balanceOf(bobAddress);
+      balanceOfAlice = await beautifulImage.balanceOf(aliceAddress);
+      tokenOwner = await beautifulImage.ownerOf(tokenId);
+
+      expect(1).to.be.equal(balanceOfBob);
+      expect(0).to.be.equal(balanceOfAlice);
+      expect(bobAddress).to.be.equal(tokenOwner);
     });
 
     it("Should not allow to transfer unapproved token", async function () {
-      //todo arefev: implement
+      const tokenId: number = 0;
+      const aliceAddress: string = await alice.getAddress();
+      const bobAddress: string = await bob.getAddress();
+
+      const transferTxPromise: any = beautifulImage.connect(bob).transferFrom(aliceAddress, bobAddress, tokenId);
+
+      await expect(transferTxPromise)
+        .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'ERC721: transfer caller is not owner nor approved'");
     });
   });
 
@@ -209,10 +275,10 @@ describe("BeautifulImage", function () {
         "totalSupply()", "tokenOfOwnerByIndex(address,uint256)", "tokenByIndex(uint256)"
       );
 
-      const supportsIERC165 = await contract.supportsInterface(ierc165Selector);
-      const supportsIERC721Metadata = await contract.supportsInterface(ierc721MetadataSelector);
-      const supportsIERC721Enumerable = await contract.supportsInterface(ierc721EnumerableSelector);
-      const supportsIERC721 = await contract.supportsInterface(ierc721Selector);
+      const supportsIERC165 = await beautifulImage.supportsInterface(ierc165Selector);
+      const supportsIERC721Metadata = await beautifulImage.supportsInterface(ierc721MetadataSelector);
+      const supportsIERC721Enumerable = await beautifulImage.supportsInterface(ierc721EnumerableSelector);
+      const supportsIERC721 = await beautifulImage.supportsInterface(ierc721Selector);
 
       expect(supportsIERC165).to.equal(true);
       expect(supportsIERC721Metadata).to.equal(true);
@@ -225,9 +291,9 @@ describe("BeautifulImage", function () {
       const itemURI: string = "random";
       const aliceAddress: string = await alice.getAddress();
 
-      const mintTx: any = await contract.mint(aliceAddress, itemURI);
+      const mintTx: any = await beautifulImage.mint(aliceAddress, itemURI);
 
-      const tokenOwner = await contract.ownerOf(expectedTokenId);
+      const tokenOwner = await beautifulImage.ownerOf(expectedTokenId);
 
       expect(aliceAddress).to.equal(tokenOwner);
     });
@@ -235,21 +301,9 @@ describe("BeautifulImage", function () {
     it('Should not allow to find owner for a non-existent token', async function() {
       const nonExistentTokenId = 1;
 
-      const ownerOfPromise: any = contract.ownerOf(1);
+      const ownerOfPromise: any = beautifulImage.ownerOf(1);
 
       await expect(ownerOfPromise).to.be.revertedWith("ERC721: owner query for nonexistent token");
-    });
-
-    it('Should return valid token by index', async function() {
-      //todo arefev: implement
-    });
-
-    it('Should return valid total supply', async function() {
-      //todo arefev: implement
-    });
-
-    it('Should return a valid balance of account', async function() {
-      //todo arefev: implement
     });
   });
 });

@@ -1,16 +1,11 @@
 import { ethers } from "hardhat";
-import { Signer, Contract, ContractFactory } from "ethers";
+import { Signer } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { BeautifulImage, BeautifulImage__factory } from '../typechain-types';
 
-//todo arefev: implement
-//todo arefev: baseURI == "https://ipfs.io/ipfs/"
-//todo arefev: contractURI ==  "https://ipfs.io/ipfs/QmVW8oSySifTBDBvkTGC7J5r9UDCJ4Ndiig6B3EHvURt5S"
 async function main() {
-  /*const stakingToken: string = '0xacfe81d7c4504dea81043f33269c986fac7d00e5';
-  const rewardToken: string = '0xEB493B155cADDf961268A7417F6bcf90eCcE1645';
-  const rewardPercentage: number = 20; //20%
-  const rewardPeriod: number = 10 * 60; //10 min
-  const stakeWithdrawalTimeout: number = 20 * 60; //20 min
+  const baseURI: string = "https://ipfs.io/ipfs/"
+  const contractURI: string =  "https://ipfs.io/ipfs/QmVW8oSySifTBDBvkTGC7J5r9UDCJ4Ndiig6B3EHvURt5S"
 
   const accounts: SignerWithAddress[] = await ethers.getSigners();
 
@@ -20,14 +15,13 @@ async function main() {
 
   console.log("Deploying contracts with the account:", accounts[0].address);
 
-  const StakingContract: ContractFactory = await ethers.getContractFactory("StakingContract");
-  const stakingContract: Contract = await StakingContract.deploy(
-        stakingToken, rewardToken, rewardPercentage, rewardPeriod, stakeWithdrawalTimeout
-  );
+  const BeautifulImage: BeautifulImage__factory = 
+      (await ethers.getContractFactory("BeautifulImage")) as BeautifulImage__factory;
+  beautifulImage = await BeautifulImageFactory.deploy(contractURI, baseURI);
 
-  await stakingContract.deployed();
+  await beautifulImage.deployed();
 
-  console.log("StakingContract deployed to:", stakingContract.address);*/
+  console.log("BeautifulImage deployed to:", beautifulImage.address);
 }
 
 main()
