@@ -19,14 +19,12 @@ In the root folder create *.env* file and fill it the following properties:<br/>
 2. From the root folder run ``` npx hardhat verify --network rinkeby [contract address] [arguments separated by space] ```
 
 ## How to run a task
-From the root folder run<br/>``` npx hardhat [task name] --network rinkeby --contract-address [contract address] --argument [argument value] ```<br/>Example:<br/>``` npx hardhat claim --network rinkeby --contract-address 0x5676B4052C04Aff5479d042C85a4cC38945Aba7C ```
+From the root folder run<br/>``` npx hardhat [task name] --network rinkeby --contract-address [contract address] --argument [argument value] ```<br/>Example:<br/>``` npx hardhat mint --network rinkeby --contract-address 0x7ce781adf55e0ebd1162e2165d95b3d56579f2b1 --to 0x12D8F31923Aa0ACC543b96733Bc0ed348Ef44970 --token-identifier QmRJUWeoTfKxfDpqfLQ2umUdEYNgxA6sNwAZcXn8Y94bVh ```
 
 ## The list of available tasks
-| Task name | Description                                                                               | Options                                                                                        |
-|-----------|-------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|
-| claim     | Transfers the reward tokens if any to the `msg.sender` address                            | --contract-address => An address of a contract                                                 |
-| stake     | Transfers the `amount` of tokens from `msg.sender` address to the StakingContract address | --contract-address => An address of a contract <br/> --amount => The amount of tokens to stake |
-| unstake   | Transfers staked tokens if any to the `msg.sender` address                                | --contract-address => An address of a contract                                                 |
+| Task name | Description                                                      | Options                                                                                                                                          |
+|-----------|------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| mint      | Mints a new token with the `tokenIdentifier` to the `to` address | --contract-address => An address of a contract; --to => The recipient address; --tokenIdentifier => The content identifier of a token's metadata |
 
 ## How to run tests and evaluate the coverage
 From the root folder run ``` npx hardhat coverage ```

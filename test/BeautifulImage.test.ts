@@ -1,6 +1,6 @@
 import { expect } from "chai";
-import { ethers, artifacts, network } from "hardhat";
-import { Signer, Contract, ContractFactory, Event, BigNumber } from "ethers";
+import { ethers } from "hardhat";
+import { Signer, Event, BigNumber } from "ethers";
 import { BeautifulImage, BeautifulImage__factory } from '../typechain-types';
 
 describe("BeautifulImage", function () {
@@ -28,7 +28,7 @@ describe("BeautifulImage", function () {
   function extractSelector(...signatures: string[]): string {
     let selector = 0;
 
-    for (let signature of signatures) {
+    for (const signature of signatures) {
       const hexAsString = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(signature)).slice(0, 10);
       const hexAsInt = parseInt(hexAsString);
       selector = selector ^ hexAsInt;
@@ -126,7 +126,6 @@ describe("BeautifulImage", function () {
     });
 
     it("Should not allow minting to the zero address", async function () {
-      const aliceAddress: string = await alice.getAddress();
       const tokenURI: string = "random";
       const mintTxPromise: Promise<any> = beautifulImage.mint(ethers.constants.AddressZero, tokenURI);
 
@@ -290,17 +289,16 @@ describe("BeautifulImage", function () {
       const itemURI: string = "random";
       const aliceAddress: string = await alice.getAddress();
 
-      const mintTx: any = await beautifulImage.mint(aliceAddress, itemURI);
+      await beautifulImage.mint(aliceAddress, itemURI);
 
       const tokenOwner = await beautifulImage.ownerOf(expectedTokenId);
-
       expect(aliceAddress).to.equal(tokenOwner);
     });
 
     it('Should not allow to find owner for a non-existent token', async function() {
       const nonExistentTokenId = 1;
 
-      const ownerOfPromise: any = beautifulImage.ownerOf(1);
+      const ownerOfPromise: any = beautifulImage.ownerOf(nonExistentTokenId);
 
       await expect(ownerOfPromise).to.be.revertedWith("ERC721: owner query for nonexistent token");
     });

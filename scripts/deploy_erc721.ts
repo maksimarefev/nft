@@ -1,5 +1,4 @@
 import { ethers } from "hardhat";
-import { Signer } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { BeautifulImage, BeautifulImage__factory } from '../typechain-types';
 
@@ -17,7 +16,7 @@ async function main() {
 
   const BeautifulImage: BeautifulImage__factory = 
       (await ethers.getContractFactory("BeautifulImage")) as BeautifulImage__factory;
-  const beautifulImage = await BeautifulImage.deploy(contractURI, baseURI);
+  const beautifulImage: BeautifulImage = await BeautifulImage.deploy(contractURI, baseURI);
 
   await beautifulImage.deployed();
 

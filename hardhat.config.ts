@@ -1,8 +1,9 @@
-import 'dotenv/config';
-import 'solidity-coverage';
-import '@typechain/hardhat'
-import '@nomiclabs/hardhat-ethers'
-import '@nomiclabs/hardhat-waffle'
+import "dotenv/config";
+import "./tasks/mint.ts";
+import "solidity-coverage";
+import "@typechain/hardhat";
+import "@nomiclabs/hardhat-ethers";
+import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-etherscan";
 import { HardhatUserConfig } from "hardhat/config";
 
