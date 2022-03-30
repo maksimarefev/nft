@@ -4,7 +4,6 @@ import { Signer, Contract, ContractFactory, Event, BigNumber } from "ethers";
 import { BeautifulImage, BeautifulImage__factory } from '../typechain-types';
 
 describe("BeautifulImage", function () {
-
   const baseURI: string = "https://ipfs.io/ipfs/";
   const contractURI: string = "https://ipfs.io/ipfs/QmVW8oSySifTBDBvkTGC7J5r9UDCJ4Ndiig6B3EHvURt5S";
 
@@ -111,8 +110,8 @@ describe("BeautifulImage", function () {
       const aliceBalance: BigNumber = await beautifulImage.balanceOf(aliceAddress);
       expect(1).to.equal(aliceBalance.toNumber());
 
-      const tokentOwner: string = await beautifulImage.ownerOf(expectedTokenId);
-      expect(aliceAddress).to.equal(tokentOwner);
+      const tokenOwner: string = await beautifulImage.ownerOf(expectedTokenId);
+      expect(aliceAddress).to.equal(tokenOwner);
 
       const totalSupplyAfterMinting: BigNumber = await beautifulImage.totalSupply();
       expect(1).to.equal(totalSupplyAfterMinting.toNumber());

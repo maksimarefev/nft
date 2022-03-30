@@ -26,7 +26,7 @@ contract BeautifulImage is ERC721Enumerable, ERC721URIStorage, ERC721Burnable, O
 
      /**
       * @notice Mints a new token with the `tokenCID` to the `to` address
-      * @param to is the recepient address
+      * @param to is the recipient address
       * @param tokenCID is the content identifier of a token's metadata
       */
     function mint(address to, string memory tokenCID) public onlyOwner {

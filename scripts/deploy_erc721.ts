@@ -4,8 +4,8 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { BeautifulImage, BeautifulImage__factory } from '../typechain-types';
 
 async function main() {
-  const baseURI: string = "https://ipfs.io/ipfs/"
-  const contractURI: string =  "https://ipfs.io/ipfs/QmVW8oSySifTBDBvkTGC7J5r9UDCJ4Ndiig6B3EHvURt5S"
+  const baseURI: string = "ipfs://"
+  const contractURI: string =  "ipfs://QmVW8oSySifTBDBvkTGC7J5r9UDCJ4Ndiig6B3EHvURt5S"
 
   const accounts: SignerWithAddress[] = await ethers.getSigners();
 
@@ -17,7 +17,7 @@ async function main() {
 
   const BeautifulImage: BeautifulImage__factory = 
       (await ethers.getContractFactory("BeautifulImage")) as BeautifulImage__factory;
-  beautifulImage = await BeautifulImageFactory.deploy(contractURI, baseURI);
+  const beautifulImage = await BeautifulImage.deploy(contractURI, baseURI);
 
   await beautifulImage.deployed();
 
