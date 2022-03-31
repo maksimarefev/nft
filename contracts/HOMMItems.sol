@@ -9,8 +9,8 @@ import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
 
 //todo arefev: add docs
 //todo arefev: add safeMint functions
-//todo arefev: adda balanceOf for gold, wood & mercury
 //todo arefev: specify metadata urls in docs
+//todo arefev: add balanceOf for gold, wood & mercury
 //todo arefev: add instruction for uploading to readme
 /**
  * @notice Represents some items from Heroes of Might and Magic III
@@ -27,11 +27,6 @@ contract HOMMItems is ERC1155Supply, ERC1155Burnable, Ownable {
 
     mapping(uint256 => string) private tokenIdToUri;
 
-    //todo arefev: should be changed after transfer as well
-    //todo arefev: balanceOf could leveraged instead
-    mapping(uint256 => address) private ownerOfArtifact;
-
-    //todo arefev: make initial supplies conifgurable
     constructor() public ERC1155("") {
         //artifacts are non-fungible
         uint256 hellstormHelmet = 3;
@@ -122,12 +117,11 @@ contract HOMMItems is ERC1155Supply, ERC1155Burnable, Ownable {
      * @param metadataFile is the file CIDv1
      */
     function mintArtifact(address to, string memory metadataFile) public onlyOwner {
-        requireNonEmpty(metadataFile, "metadataFile is empty");
+        _requireNonEmpty(metadataFile, "metadataFile is empty");
 
         tokenIdGenerator.increment();
         _mint(to, tokenIdGenerator.current(), 1, "");
         tokenIdToUri[tokenIdGenerator.current()] = _makeUri(metadataFile);
-        ownerOfArtifact[tokenIdGenerator.current()] = to;
     }
 
     /**
@@ -143,12 +137,11 @@ contract HOMMItems is ERC1155Supply, ERC1155Burnable, Ownable {
         uint256[] memory amounts = new uint256[](filesCount);
 
         for(uint8 i = 0; i < filesCount; i++) {
-            requireNonEmpty(metadataFiles[i], "metadataFile is empty");
+            _requireNonEmpty(metadataFiles[i], "metadataFile is empty");
             tokenIdGenerator.increment();
             ids[i] = tokenIdGenerator.current();
             amounts[i] = 1;
             tokenIdToUri[tokenIdGenerator.current()] = _makeUri(metadataFiles[i]);
-            ownerOfArtifact[tokenIdGenerator.current()] = to;
         }
 
         _mintBatch(to, ids, amounts, "");
@@ -160,25 +153,15 @@ contract HOMMItems is ERC1155Supply, ERC1155Burnable, Ownable {
      * @return the metadata uri for specified `tokenId`
      */
     function uri(uint256 tokenId) override public view returns (string memory) {
-        requireNonEmpty(tokenIdToUri[tokenId], "No token with such id");
+        _requireNonEmpty(tokenIdToUri[tokenId], "No token with such id");
         return (tokenIdToUri[tokenId]);
-    }
-
-    /**todo arefev: fix the doc
-     * @notice returns the owner of artifact with token id == `artifactId`
-     * @param artifactId is the token id
-     * @return the owner of artifact with token id == `artifactId`
-     */
-    function ownerOf(uint256 artifactId) public view returns (address) {
-        require(ownerOfArtifact[artifactId] != address(0), "No artifact with such id");
-        return ownerOfArtifact[artifactId];
     }
 
     function _makeUri(string memory metadatFile) internal pure returns (string memory) {
         return string(abi.encodePacked("https://", metadatFile, ".ipfs.dweb.link"));
     }
 
-    function requireNonEmpty(string memory metadataFile, string memory error) internal pure {
+    function _requireNonEmpty(string memory metadataFile, string memory error) internal pure {
         require(bytes(metadataFile).length > 0, error);
     }
 
@@ -189,7 +172,7 @@ contract HOMMItems is ERC1155Supply, ERC1155Burnable, Ownable {
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) internal virtual override(ERC1155, ERC1155Supply) { //todo arefev: figure out how it works
+    ) internal virtual override(ERC1155, ERC1155Supply) {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
 }

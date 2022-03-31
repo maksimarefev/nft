@@ -3,47 +3,7 @@ import { ethers } from "hardhat";
 import { Signer, Event, BigNumber } from "ethers";
 import { HOMMItems, HOMMItems__factory } from '../typechain-types';
 
-/*todo arefev: create test cases
-    events:
-        TransferBatch
-        TransferSingle
-        ApprovalForAll
-        URI
-
-    functions:
-        mintGold
-        mintWood
-        mintMercury
-        mintGoldWoodAndMercury
-        mintArtifact
-        mintManyArtifacts
-        supportsInterface
-        uri
-
-        balanceOf
-        balanceOfBatch
-        setApprovalForAll
-        isApprovedForAll
-        safeTransferFrom
-        safeBatchTransferFrom
-
-        totalSupply
-        exists
-
-        burn
-        burnBatch
-    scenarios:
-        //function setApprovalForAll(address operator, bool approved) external;
-         transfer:
-         //function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes calldata data)
-         //function safeBatchTransferFrom(address from, address to, uint256[] calldata ids, uint256[] calldata amounts, bytes calldata data)
-         supportsInterface:
-         misc:
-            test uri
-
-*/
 describe("HOMMItems", function () {
-
   const GOLD: number = 0;
   const WOOD: number = 1;
   const MERCURY: number = 2;
@@ -56,7 +16,7 @@ describe("HOMMItems", function () {
   let hommItems: HOMMItems;
 
   function assertTransferSingleEvent(event: Event, from: string, to: string, id: number, value: number) {
-      //todo arefev: should i test the operator?
+      //todo arefev: should i test the operator? => YES I SHOULD
       expect("TransferSingle").to.equal(event.event);
       expect(from).to.equal(event.args.from);
       expect(to).to.equal(event.args.to);
@@ -65,11 +25,10 @@ describe("HOMMItems", function () {
   }
 
   function assertTransferBatchEvent(event: Event, from: string, to: string, ids: number[], values: number[]) {
-      //todo arefev: should i test the operator?
+      //todo arefev: should i test the operator? => YES I SHOULD
       expect("TransferBatch").to.equal(event.event);
       expect(from).to.equal(event.args.from);
       expect(to).to.equal(event.args.to);
-      //expect(values).to.eql(event.args.values.map(value => value.toNumber())); //todo arefev: why aren't value populated?
       expect(ids).to.eql(event.args.ids.map(id => id.toNumber()));
   }
 
@@ -80,7 +39,6 @@ describe("HOMMItems", function () {
       expect(approved).to.equal(event.args.approved);
   }
 
-  //todo arefev: create utils module
   function extractSelector(...signatures: string[]): string {
     let selector = 0;
 
@@ -101,52 +59,6 @@ describe("HOMMItems", function () {
 
     hommItems = await HOMMItemsFactory.deploy();
   });
-
-  /* describe("metadata", async function() {
-    it("Should return the valid symbol", async function () {
-        const expectedSymbol: string = "CTS";
-
-        const actualSymbol: string = await hommItems.symbol();
-        
-        expect(expectedSymbol).to.equal(actualSymbol);
-    });
-
-    it("Should return the valid name", async function () {
-        const expectedName: string = "Cats";
-
-        const actualName: string = await hommItems.name();
-        
-        expect(expectedName).to.equal(actualName);
-    });
-
-    it("Should return the valid tokenURI", async function () {
-      const expectedTokenId: number = 0;
-      const itemURI: string = "random";
-      const aliceAddress: string = await alice.getAddress();
-      const baseURI: string = await hommItems.getBaseURI();
-
-      const mintTx: any = await hommItems.mint(aliceAddress, itemURI);
-      const mintTxReceipt: any = await mintTx.wait();
-
-      expect(1, mintTxReceipt.events.length)
-      assertTransferEvent(mintTxReceipt.events[0], ethers.constants.AddressZero, aliceAddress, expectedTokenId);
-
-      const tokenURI: string = await hommItems.tokenURI(expectedTokenId);
-      expect(baseURI + itemURI).to.equal(tokenURI);
-    });
-
-    it("Should return the valid contract URI", async function () {
-      const actualContractURI = await hommItems.contractURI();
-
-      expect(contractURI).to.be.equal(actualContractURI);
-    });
-
-    it("Should return the valid base URI", async function () {
-      const actualBaseURI = await hommItems.getBaseURI();
-
-      expect(baseURI).to.be.equal(actualBaseURI);
-    });
-  }); */
 
   describe("minting", async function() {
     async function shouldAllowToMint(
@@ -209,20 +121,29 @@ describe("HOMMItems", function () {
         const expectedTokenId: number = 6;
         const aliceAddress: string = await alice.getAddress();
 
+        const isTokenExists: boolean = await hommItems.exists(expectedTokenId);
+        expect(false).to.equal(isTokenExists);
+
         const mintTx: any = await hommItems.mintArtifact(aliceAddress, metadataFile);
         const mintTxReceipt: any = await mintTx.wait();
 
         expect(1, mintTxReceipt.events.length);
         assertTransferSingleEvent(mintTxReceipt.events[0], ethers.constants.AddressZero, aliceAddress, expectedTokenId, 1);
 
-        const theOwner: string = await hommItems.ownerOf(expectedTokenId);
-        expect(aliceAddress).to.be.equal(theOwner);
+        const balanceOfToken: BigNumber = await hommItems.balanceOf(aliceAddress, expectedTokenId);
+        expect(1).to.be.equal(balanceOfToken.toNumber());
     });
 
     it("Should allow for owner to mint many artifacts", async function () {
         const metadataFiles: string[] = ["random", "random"];
         const expectedTokenIds: number[] = [6, 7];
         const aliceAddress: string = await alice.getAddress();
+
+        let isTokenExists: boolean = await hommItems.exists(expectedTokenIds[0]);
+        expect(false).to.equal(isTokenExists);
+
+        isTokenExists = await hommItems.exists(expectedTokenIds[1]);
+        expect(false).to.equal(isTokenExists);
 
         const mintTx: any = await hommItems.mintManyArtifacts(aliceAddress, metadataFiles);
         const mintTxReceipt: any = await mintTx.wait();
@@ -232,11 +153,11 @@ describe("HOMMItems", function () {
             mintTxReceipt.events[0], ethers.constants.AddressZero, aliceAddress, expectedTokenIds, [1, 1]
         );
 
-        let theOwner: string = await hommItems.ownerOf(expectedTokenIds[0]);
-        expect(aliceAddress).to.be.equal(theOwner);
+        let balanceOfToken: BigNumber = await hommItems.balanceOf(aliceAddress, expectedTokenIds[0]);
+        expect(1).to.be.equal(balanceOfToken.toNumber());
 
-        theOwner = await hommItems.ownerOf(expectedTokenIds[1]);
-        expect(aliceAddress).to.be.equal(theOwner);
+        balanceOfToken = await hommItems.balanceOf(aliceAddress, expectedTokenIds[1]);
+        expect(1).to.be.equal(balanceOfToken.toNumber());
     });
 
     it("Should allow for owner to mint gold, wood and mercury", async function() {
@@ -378,14 +299,32 @@ describe("HOMMItems", function () {
       await expect(mintTxPromise)
         .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'ERC1155: mint to the zero address'");
     });
+
+     it("Should not allow to mint with empty metadataFile", async function () {
+        const aliceAddress: string = await alice.getAddress();
+        const artifactCID: string = "";
+
+        const mintTxPromise: Promise<any> = hommItems.mintArtifact(aliceAddress, artifactCID);
+        await expect(mintTxPromise).to.be.revertedWith("metadataFile is empty");
+     });
+
+     it("Should not allow to mint with empty metadataFiles names", async function () {
+         const aliceAddress: string = await alice.getAddress();
+         const artifactCIDs: string[] = [""];
+
+         const mintTxPromise: Promise<any> = hommItems.mintManyArtifacts(aliceAddress, artifactCIDs);
+         await expect(mintTxPromise).to.be.revertedWith("metadataFile is empty");
+     });
+
+     it("Should not allow to mint with empty metadataFiles array", async function () {
+        const aliceAddress: string = await alice.getAddress();
+        const artifactCIDs: string[] = [];
+
+        const mintTxPromise: Promise<any> = hommItems.mintManyArtifacts(aliceAddress, artifactCIDs);
+        await expect(mintTxPromise).to.be.revertedWith("metadataFiles are empty");
+     });
   });
 
-    /*todo arefev
-     burn(function burnBatch(address account, uint256[] memory ids, uint256[] memory values)):
-        should allow to batch burn belonging tokens
-        should not allow to batch burn non-belonging tokens
-        should allow to batch burn approved tokens
-     */
   describe("burning", async function() {
     it("Should allow to burn belonging tokens", async function () {
       const amountToBurn: number = 500;
@@ -451,14 +390,13 @@ describe("HOMMItems", function () {
     });
   });
 
-  /* describe("transfer", async function() {
-    beforeEach("Minting a token for Alice", async function () {
-      const tokenURI: string = "random";
-      const aliceAddress: string = await alice.getAddress();
-
-      await hommItems.mint(aliceAddress, tokenURI);
-    });
-
+    /*
+    transfer(function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes calldata data)):
+        Should allow to transfer belonging token
+        Should allow to transfer approved token
+        Should not allow to transfer unapproved token
+    */
+  /*describe("transfer", async function() {
     it("Should allow to transfer belonging token", async function () {
       const tokenId: number = 0;
       const aliceAddress: string = await alice.getAddress();
@@ -535,53 +473,49 @@ describe("HOMMItems", function () {
     });
   }); */
 
-  /* describe("misc", async function() {
+  describe("misc", async function() {
+    it("Should construct a valid uri", async function() {
+        const aliceAddress: string = await alice.getAddress();
+        const artifactCID: string = "random";
+        const expectedTokenId: number = 6;
+
+        await hommItems.mintArtifact(aliceAddress, artifactCID);
+
+        const isTokenExists: boolean = await hommItems.exists(expectedTokenId);
+        expect(true).to.equal(isTokenExists);
+
+        const tokenUri: string = await hommItems.uri(expectedTokenId);
+        expect("https://random.ipfs.dweb.link").to.equal(tokenUri);
+    });
+
+    it("Should not allow to get uri for non-existent token", async function() {
+        const tokenId: number = 6;
+        const isTokenExists: boolean = await hommItems.exists(tokenId);
+        expect(false).to.equal(isTokenExists);
+
+        const uriTxPromise: Promise<any> =  hommItems.uri(tokenId);
+        await expect(uriTxPromise).to.be.revertedWith("No token with such id");
+    });
+
     it('Should correctly check supported interfaces', async function() {
       const ierc165Selector = extractSelector("supportsInterface(bytes4)");
-      const ierc721MetadataSelector = extractSelector("name()", "symbol()", "tokenURI(uint256)");
-      const ierc721Selector = extractSelector(
-        "balanceOf(address)",
-        "ownerOf(uint256)",
-        "safeTransferFrom(address,address,uint256)",
-        "transferFrom(address,address,uint256)",
-        "approve(address,uint256)",
-        "getApproved(uint256)",
+      const ierc1155MetadataURISelector = extractSelector("uri(uint256)");
+      const ierc1155Selector = extractSelector(
+        "balanceOf(address,uint256)",
+        "balanceOfBatch(address[],uint256[])",
         "setApprovalForAll(address,bool)",
         "isApprovedForAll(address,address)",
-        "safeTransferFrom(address,address,uint256,bytes)"
-      );
-      const ierc721EnumerableSelector = extractSelector(
-        "totalSupply()", "tokenOfOwnerByIndex(address,uint256)", "tokenByIndex(uint256)"
+        "safeTransferFrom(address,address,uint256,uint256,bytes)",
+        "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)"
       );
 
       const supportsIERC165 = await hommItems.supportsInterface(ierc165Selector);
-      const supportsIERC721Metadata = await hommItems.supportsInterface(ierc721MetadataSelector);
-      const supportsIERC721Enumerable = await hommItems.supportsInterface(ierc721EnumerableSelector);
-      const supportsIERC721 = await hommItems.supportsInterface(ierc721Selector);
+      const supportsIERC1155 = await hommItems.supportsInterface(ierc1155Selector);
+      const supportsIERC1155MetadataURI = await hommItems.supportsInterface(ierc1155MetadataURISelector);
 
-      expect(supportsIERC165).to.equal(true);
-      expect(supportsIERC721Metadata).to.equal(true);
-      expect(supportsIERC721Enumerable).to.equal(true);
-      expect(supportsIERC721).to.equal(true);
+      expect(true).to.equal(supportsIERC165);
+      expect(true).to.equal(supportsIERC1155);
+      expect(true).to.equal(supportsIERC1155MetadataURI);
     });
-
-    it('Should return valid token owner', async function() {
-      const expectedTokenId: number = 0;
-      const itemURI: string = "random";
-      const aliceAddress: string = await alice.getAddress();
-
-      await hommItems.mint(aliceAddress, itemURI);
-
-      const tokenOwner = await hommItems.ownerOf(expectedTokenId);
-      expect(aliceAddress).to.equal(tokenOwner);
-    });
-
-    it('Should not allow to find owner for a non-existent token', async function() {
-      const nonExistentTokenId = 1;
-
-      const ownerOfPromise: any = hommItems.ownerOf(nonExistentTokenId);
-
-      await expect(ownerOfPromise).to.be.revertedWith("ERC721: owner query for nonexistent token");
-    });
-  }); */
+  });
 });
