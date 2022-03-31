@@ -4,18 +4,18 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
 
 //todo arefev: add docs
 //todo arefev: add safeMint functions
+//todo arefev: adda balanceOf for gold, wood & mercury
 //todo arefev: specify metadata urls in docs
 //todo arefev: add instruction for uploading to readme
 /**
  * @notice Represents some items from Heroes of Might and Magic III
  */
-contract HOMMItems is ERC1155Holder, ERC1155Supply, ERC1155Burnable, Ownable {
+contract HOMMItems is ERC1155Supply, ERC1155Burnable, Ownable {
     using Counters for Counters.Counter;
 
     Counters.Counter private tokenIdGenerator;
@@ -27,6 +27,11 @@ contract HOMMItems is ERC1155Holder, ERC1155Supply, ERC1155Burnable, Ownable {
 
     mapping(uint256 => string) private tokenIdToUri;
 
+    //todo arefev: should be changed after transfer as well
+    //todo arefev: balanceOf could leveraged instead
+    mapping(uint256 => address) private ownerOfArtifact;
+
+    //todo arefev: make initial supplies conifgurable
     constructor() public ERC1155("") {
         //artifacts are non-fungible
         uint256 hellstormHelmet = 3;
@@ -122,6 +127,7 @@ contract HOMMItems is ERC1155Holder, ERC1155Supply, ERC1155Burnable, Ownable {
         tokenIdGenerator.increment();
         _mint(to, tokenIdGenerator.current(), 1, "");
         tokenIdToUri[tokenIdGenerator.current()] = _makeUri(metadataFile);
+        ownerOfArtifact[tokenIdGenerator.current()] = to;
     }
 
     /**
@@ -142,21 +148,10 @@ contract HOMMItems is ERC1155Holder, ERC1155Supply, ERC1155Burnable, Ownable {
             ids[i] = tokenIdGenerator.current();
             amounts[i] = 1;
             tokenIdToUri[tokenIdGenerator.current()] = _makeUri(metadataFiles[i]);
+            ownerOfArtifact[tokenIdGenerator.current()] = to;
         }
 
         _mintBatch(to, ids, amounts, "");
-    }
-
-    /**
-     * @dev Returns true if this contract implements the interface defined by
-     * `interfaceId`. See the corresponding
-     * https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section]
-     * to learn more about how these ids are created.
-     *
-     * This function call must use less than 30 000 gas.
-     */
-    function supportsInterface(bytes4 interfaceId) public view override(ERC1155, ERC1155Receiver) returns (bool) {
-        return super.supportsInterface(interfaceId);
     }
 
     /**
@@ -167,6 +162,16 @@ contract HOMMItems is ERC1155Holder, ERC1155Supply, ERC1155Burnable, Ownable {
     function uri(uint256 tokenId) override public view returns (string memory) {
         requireNonEmpty(tokenIdToUri[tokenId], "No token with such id");
         return (tokenIdToUri[tokenId]);
+    }
+
+    /**todo arefev: fix the doc
+     * @notice returns the owner of artifact with token id == `artifactId`
+     * @param artifactId is the token id
+     * @return the owner of artifact with token id == `artifactId`
+     */
+    function ownerOf(uint256 artifactId) public view returns (address) {
+        require(ownerOfArtifact[artifactId] != address(0), "No artifact with such id");
+        return ownerOfArtifact[artifactId];
     }
 
     function _makeUri(string memory metadatFile) internal pure returns (string memory) {
