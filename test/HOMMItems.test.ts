@@ -24,7 +24,7 @@ describe("HOMMItems", function () {
       expect(id).to.equal(event.args.id.toNumber());
   }
 
-  function assertTransferBatchEvent(event: Event, operator: string, from: string, to: string, ids: number[], values: number[]) {
+  function assertTransferBatchEvent(event: Event, operator: string, from: string, to: string, ids: number[]) {
       expect("TransferBatch").to.equal(event.event);
       expect(from).to.equal(event.args.from);
       expect(to).to.equal(event.args.to);
@@ -152,7 +152,7 @@ describe("HOMMItems", function () {
 
         expect(1, mintTxReceipt.events.length);
         assertTransferBatchEvent(
-            mintTxReceipt.events[0], aliceAddress, ethers.constants.AddressZero, aliceAddress, expectedTokenIds, [1, 1]
+            mintTxReceipt.events[0], aliceAddress, ethers.constants.AddressZero, aliceAddress, expectedTokenIds
         );
 
         let balanceOfToken: BigNumber = await hommItems.balanceOf(aliceAddress, expectedTokenIds[0]);
@@ -194,7 +194,7 @@ describe("HOMMItems", function () {
 
         expect(1, mintTxReceipt.events.length);
         assertTransferBatchEvent(
-            mintTxReceipt.events[0], aliceAddress, ethers.constants.AddressZero, aliceAddress, [GOLD, WOOD, MERCURY], amounts
+            mintTxReceipt.events[0], aliceAddress, ethers.constants.AddressZero, aliceAddress, [GOLD, WOOD, MERCURY]
         );
 
         const aliceGoldBalanceAfterMinting: BigNumber = await hommItems.balanceOf(aliceAddress, GOLD);

@@ -149,7 +149,7 @@ contract HOMMItems is ERC1155Supply, ERC1155Burnable, Ownable {
      */
     function uri(uint256 tokenId) override public view returns (string memory) {
         _requireNonEmpty(tokenIdToUri[tokenId], "No token with such id");
-        return (tokenIdToUri[tokenId]);
+        return tokenIdToUri[tokenId];
     }
 
     function _makeUri(string memory metadatFile) internal pure returns (string memory) {

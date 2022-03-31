@@ -11,9 +11,8 @@ async function main() {
 
   console.log("Deploying contracts with the account:", accounts[0].address);
 
-  const HOMMItems: BeautifulImage__factory =
-      (await ethers.getContractFactory("HOMMItems")) as HOMMItems__factory;
-  const hommItems: BeautifulImage = await BeautifulImage.deploy();
+  const HOMMItems: HOMMItems__factory = (await ethers.getContractFactory("HOMMItems")) as HOMMItems__factory;
+  const hommItems: HOMMItems = await HOMMItems.deploy();
 
   await hommItems.deployed();
 

@@ -25,11 +25,11 @@ In the root folder create *.env* file and fill it the following properties:<br/>
 ```
 
 ## How to deploy the BeautifulImage contract
-1. From the root folder run ``` npx hardhat run --network rinkeby scripts/deploy_beautifulimage.ts ```
+1. From the root folder run ``` npx hardhat run --network rinkeby scripts/deployBeautifulImage.ts ```
 2. Save the contract address for future interactions
 
 ## How to deploy the HOMMItems contract
-1. From the root folder run ``` npx hardhat run --network rinkeby scripts/deploy_hommitems.ts ```
+1. From the root folder run ``` npx hardhat run --network rinkeby scripts/deployHOMMItems.ts ```
 2. Save the contract address for future interactions
 
 ## How to verify the contract
