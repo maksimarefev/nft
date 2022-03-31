@@ -1,5 +1,11 @@
 import "dotenv/config";
 import "./tasks/mint.ts";
+import "./tasks/mintGold.ts";
+import "./tasks/mintWood.ts";
+import "./tasks/mintMercury.ts";
+import "./tasks/mintGoldWoodAndMercury.ts";
+import "./tasks/mintArtifact.ts";
+import "./tasks/mintManyArtifacts.ts";
 import "solidity-coverage";
 import "@typechain/hardhat";
 import "@nomiclabs/hardhat-ethers";

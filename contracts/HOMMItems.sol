@@ -7,11 +7,6 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
 
-//todo arefev: add docs
-//todo arefev: add safeMint functions
-//todo arefev: specify metadata urls in docs
-//todo arefev: add balanceOf for gold, wood & mercury
-//todo arefev: add instruction for uploading to readme
 /**
  * @notice Represents some items from Heroes of Might and Magic III
  */
@@ -112,36 +107,36 @@ contract HOMMItems is ERC1155Supply, ERC1155Burnable, Ownable {
     }
 
     /**
-     * @notice mints a new artifact
+     * @notice mints a new artifact with the `metadataCID` CID to the `to` address
      * @param to is the owner of artifact
-     * @param metadataFile is the file CIDv1
+     * @param metadataCID is the file CIDv1
      */
-    function mintArtifact(address to, string memory metadataFile) public onlyOwner {
-        _requireNonEmpty(metadataFile, "metadataFile is empty");
+    function mintArtifact(address to, string memory metadataCID) public onlyOwner {
+        _requireNonEmpty(metadataCID, "metadataCID is empty");
 
         tokenIdGenerator.increment();
         _mint(to, tokenIdGenerator.current(), 1, "");
-        tokenIdToUri[tokenIdGenerator.current()] = _makeUri(metadataFile);
+        tokenIdToUri[tokenIdGenerator.current()] = _makeUri(metadataCID);
     }
 
     /**
-     * @notice mints a bunch of new artifacts
+     * @notice mints a bunch of new artifacts with the `metadataCIDs` to the `to` address
      * @param to is the owner of artifacts
-     * @param metadataFiles are the files' CIDv1s
+     * @param metadataCIDs are the files' CIDv1s
      */
-    function mintManyArtifacts(address to, string[] memory metadataFiles) public onlyOwner {
-        uint256 filesCount = metadataFiles.length;
-        require(filesCount > 0, "metadataFiles are empty");
+    function mintManyArtifacts(address to, string[] memory metadataCIDs) public onlyOwner {
+        uint256 metadataCIDsCount = metadataCIDs.length;
+        require(metadataCIDsCount > 0, "metadataCIDs are empty");
 
-        uint256[] memory ids = new uint256[](filesCount);
-        uint256[] memory amounts = new uint256[](filesCount);
+        uint256[] memory ids = new uint256[](metadataCIDsCount);
+        uint256[] memory amounts = new uint256[](metadataCIDsCount);
 
-        for(uint8 i = 0; i < filesCount; i++) {
-            _requireNonEmpty(metadataFiles[i], "metadataFile is empty");
+        for(uint8 i = 0; i < metadataCIDsCount; i++) {
+            _requireNonEmpty(metadataCIDs[i], "metadataCID is empty");
             tokenIdGenerator.increment();
             ids[i] = tokenIdGenerator.current();
             amounts[i] = 1;
-            tokenIdToUri[tokenIdGenerator.current()] = _makeUri(metadataFiles[i]);
+            tokenIdToUri[tokenIdGenerator.current()] = _makeUri(metadataCIDs[i]);
         }
 
         _mintBatch(to, ids, amounts, "");
@@ -161,8 +156,8 @@ contract HOMMItems is ERC1155Supply, ERC1155Burnable, Ownable {
         return string(abi.encodePacked("https://", metadatFile, ".ipfs.dweb.link"));
     }
 
-    function _requireNonEmpty(string memory metadataFile, string memory error) internal pure {
-        require(bytes(metadataFile).length > 0, error);
+    function _requireNonEmpty(string memory target, string memory error) internal pure {
+        require(bytes(target).length > 0, error);
     }
 
     function _beforeTokenTransfer(

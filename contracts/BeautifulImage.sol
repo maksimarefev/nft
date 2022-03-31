@@ -19,7 +19,6 @@ contract BeautifulImage is ERC721Enumerable, ERC721URIStorage, ERC721Burnable, O
     string private _contractURI;
     string private baseURI_;
 
-    //todo arefev: rename that contract and change the 'name' and the 'symbol' accordingly
     constructor(string memory contractURI, string memory baseURI) public ERC721("Cats", "CTS") {
         _contractURI = contractURI;
         baseURI_ = baseURI;

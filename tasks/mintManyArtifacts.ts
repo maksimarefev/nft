@@ -3,20 +3,20 @@ import "@nomiclabs/hardhat-ethers";
 import { task } from 'hardhat/config';
 import { Contract, ContractFactory, Event } from "ethers";
 
-task("mint", "Mints a new token with the `tokenIdentifier` to the `to` address")
+task("mintManyArtifacts", "Mints a bunch of new artifacts with the `metadataCIDs` to the `to` address")
     .addParam("contractAddress", "An address of a contract")
     .addParam("to", "The recipient address")
-    .addParam("tokenIdentifier", "The content identifier of a token's metadata")
+    .addParam("metadataIdentifiers", "The artifacts metadata CIDs of v1")
     .setAction(async function (taskArgs, hre) {
-        const BeautifulImage: ContractFactory = await hre.ethers.getContractFactory("BeautifulImage");
-        const beautifulImage: Contract = await BeautifulImage.attach(taskArgs.contractAddress);
+        const HOMMItems: ContractFactory = await hre.ethers.getContractFactory("HOMMItems");
+        const hommItems: Contract = await HOMMItems.attach(taskArgs.contractAddress);
 
-        const mintTx: any = await beautifulImage.mint(taskArgs.to, taskArgs.tokenIdentifier);
+        const mintTx: any = await hommItems.mintManyArtifacts(taskArgs.to, taskArgs.metadataIdentifiers);
         const mintTxReceipt: any = await mintTx.wait();
 
         const transferEvent: Event = mintTxReceipt.events[0];
         console.log(
-            "Successfully minted token with id %d to %s", transferEvent.args.tokenId.toNumber(), transferEvent.args.to
+            "Successfully minted artifacts with CIDs %s to %s", JSON.stringify(taskArgs.metadataIdentifiers), transferEvent.args.to
         );
         console.log("Gas used: %d", mintTxReceipt.gasUsed.toNumber() * mintTxReceipt.effectiveGasPrice.toNumber());
     });
