@@ -15,6 +15,6 @@ task("hommItemsMintArtifact", "Mints a new artifact with the `metadataCID` CID t
         const mintTxReceipt: any = await mintTx.wait();
 
         const transferEvent: Event = mintTxReceipt.events[0];
-        console.log("Successfully minted artifact with CID %s to %s", taskArgs.metadataIdentifier, transferEvent.args.to);
+        console.log("Successfully minted artifact with id %d to %s", transferEvent.args.id.toNumber(), transferEvent.args.to);
         console.log("Gas used: %d", mintTxReceipt.gasUsed.toNumber() * mintTxReceipt.effectiveGasPrice.toNumber());
     });

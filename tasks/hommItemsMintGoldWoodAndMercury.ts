@@ -21,9 +21,9 @@ task("hommItemsMintGoldWoodAndMercury", "Mints the `amountOfGold` (id == 0), `am
         const transferEvent: Event = mintTxReceipt.events[0];
         console.log(
             "Successfully minted %d of gold, %d of wood and %d of mercury to %s",
-            transferEvent.args.values[0].toNumber(),
-            transferEvent.args.values[1].toNumber(),
-            transferEvent.args.values[2].toNumber(),
+            transferEvent.args[4][0].toNumber(),
+            transferEvent.args[4][1].toNumber(),
+            transferEvent.args[4][2].toNumber(),
             transferEvent.args.to
         );
         console.log("Gas used: %d", mintTxReceipt.gasUsed.toNumber() * mintTxReceipt.effectiveGasPrice.toNumber());
