@@ -3,7 +3,7 @@ import "@nomiclabs/hardhat-ethers";
 import { task } from 'hardhat/config';
 import { Contract, ContractFactory, Event } from "ethers";
 
-task("mint", "Mints a new token with the `tokenIdentifier` to the `to` address")
+task("beautifulImageMint", "Mints a new token with the `tokenIdentifier` to the `to` address")
     .addParam("contractAddress", "An address of a contract")
     .addParam("to", "The recipient address")
     .addParam("tokenIdentifier", "The content identifier of a token's metadata")

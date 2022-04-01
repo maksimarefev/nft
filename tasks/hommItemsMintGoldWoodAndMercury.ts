@@ -3,7 +3,7 @@ import "@nomiclabs/hardhat-ethers";
 import { task } from 'hardhat/config';
 import { Contract, ContractFactory, Event } from "ethers";
 
-task("mintGoldWoodAndMercury", "Mints the `amountOfGold` (id == 0), `amountOfWood` (id == 1), `amountOfMercury` (id == 2) to the `to` address")
+task("hommItemsMintGoldWoodAndMercury", "Mints the `amountOfGold` (id == 0), `amountOfWood` (id == 1), `amountOfMercury` (id == 2) to the `to` address")
     .addParam("contractAddress", "An address of a contract")
     .addParam("to", "The recipient address")
     .addParam("amountOfGold", "The amount of gold to mint")

@@ -16,12 +16,15 @@ contract BeautifulImage is ERC721Enumerable, ERC721URIStorage, ERC721Burnable, O
 
     Counters.Counter private tokenIdGenerator;
 
-    string private _contractURI;
-    string private baseURI_;
+    /**
+     * @dev Link to Contract metadata https://docs.opensea.io/docs/contract-level-metadata
+     */
+    string public contractURI;
+    string public baseURI;
 
-    constructor(string memory contractURI, string memory baseURI) public ERC721("BeautifulImage", "BI") {
-        _contractURI = contractURI;
-        baseURI_ = baseURI;
+    constructor(string memory _contractURI, string memory _baseURI) public ERC721("BeautifulImage", "BI") {
+        contractURI = _contractURI;
+        baseURI = _baseURI;
     }
 
      /**
@@ -54,22 +57,8 @@ contract BeautifulImage is ERC721Enumerable, ERC721URIStorage, ERC721Burnable, O
         return super.tokenURI(tokenId);
     }
 
-    /**
-     * @return base URI
-     */
-    function getBaseURI() public view returns (string memory) {
-        return _baseURI();
-    }
-
-    /**
-     * @dev Link to Contract metadata https://docs.opensea.io/docs/contract-level-metadata
-     */
-    function contractURI() public view returns (string memory) {
-        return _contractURI;
-    }
-
     function _baseURI() internal override view virtual returns (string memory) {
-        return baseURI_;
+        return baseURI;
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override(ERC721, ERC721Enumerable) {

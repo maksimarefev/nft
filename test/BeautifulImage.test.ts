@@ -67,7 +67,7 @@ describe("BeautifulImage", function () {
       const expectedTokenId: number = 0;
       const itemURI: string = "random";
       const aliceAddress: string = await alice.getAddress();
-      const baseURI: string = await beautifulImage.getBaseURI();
+      const baseURI: string = await beautifulImage.baseURI();
 
       const mintTx: any = await beautifulImage.mint(aliceAddress, itemURI);
       const mintTxReceipt: any = await mintTx.wait();
@@ -86,7 +86,7 @@ describe("BeautifulImage", function () {
     });
 
     it("Should return the valid base URI", async function () {
-      const actualBaseURI = await beautifulImage.getBaseURI();
+      const actualBaseURI = await beautifulImage.baseURI();
 
       expect(baseURI).to.be.equal(actualBaseURI);
     });
