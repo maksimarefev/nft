@@ -15,10 +15,13 @@ contract HOMMItems is ERC1155Supply, ERC1155Burnable, Ownable {
 
     Counters.Counter private tokenIdGenerator;
 
+    string public constant name = "HOMM Items";
+    string public constant symbol = "HOMMI";
+
     //resources are fungible
-    uint256 private constant GOLD = 0;
-    uint256 private constant WOOD = 1;
-    uint256 private constant MERCURY = 2;
+    uint256 public constant GOLD = 0;
+    uint256 public constant WOOD = 1;
+    uint256 public constant MERCURY = 2;
 
     mapping(uint256 => string) private tokenIdToUri;
 

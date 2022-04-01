@@ -19,7 +19,7 @@ contract BeautifulImage is ERC721Enumerable, ERC721URIStorage, ERC721Burnable, O
     string private _contractURI;
     string private baseURI_;
 
-    constructor(string memory contractURI, string memory baseURI) public ERC721("Cats", "CTS") {
+    constructor(string memory contractURI, string memory baseURI) public ERC721("BeautifulImage", "BI") {
         _contractURI = contractURI;
         baseURI_ = baseURI;
     }

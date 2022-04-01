@@ -48,7 +48,7 @@ describe("BeautifulImage", function () {
 
   describe("metadata", async function() {
     it("Should return the valid symbol", async function () {
-        const expectedSymbol: string = "CTS";
+        const expectedSymbol: string = "BI";
 
         const actualSymbol: string = await beautifulImage.symbol();
         
@@ -56,7 +56,7 @@ describe("BeautifulImage", function () {
     });
 
     it("Should return the valid name", async function () {
-        const expectedName: string = "Cats";
+        const expectedName: string = "BeautifulImage";
 
         const actualName: string = await beautifulImage.name();
         
