@@ -1,5 +1,19 @@
 {
-  "name": "nft",
+  "name": "@m.arefev/nft",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maksimarefev/nft.git"
+  },
+  "files": [
+    "*.sol"
+  ],
+  "author": {
+    "name": "Maksim Arefev",
+    "email": "lowwestwins@gmail.com"
+  },
+  "bundleDependencies": false,
+  "license": "UNLICENSED",
   "dependencies": {
     "@nomiclabs/ethereumjs-vm": "^4.2.2",
     "@nomiclabs/hardhat-ethers": "^2.0.5",
@@ -24,6 +38,5 @@
     "ts-node": "^10.7.0",
     "typechain": "^8.0.0",
     "typescript": "^4.6.3"
-  },
-  "devDependencies": {}
+  }
 }
